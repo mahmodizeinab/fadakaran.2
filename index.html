@@ -549,6 +549,557 @@
                         ["game_subtitle", config.game_subtitle || defaultConfig.game_subtitle],
                         ["start_button_text", config.start_button_text || defaultConfig.start_button_text],
                         ["next_button_text", config.next_button_text || defaultConfig.next_button_text],
+                <!doctype html>
+<html lang="fa" dir="rtl">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بازی قهرمانان املایی</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Tahoma, Arial, sans-serif;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        .game-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+        }
+
+        .hero-icons {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .hero-icons svg {
+            position: absolute;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5%;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .welcome-card, .question-card, .result-card {
+            background: white;
+            border-radius: 24px;
+            padding: 8%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .game-title {
+            font-size: 2em;
+            color: #667eea;
+            margin-bottom: 0.5em;
+            font-weight: bold;
+        }
+
+        .game-subtitle {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 2em;
+        }
+
+        .score-badge {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 0.8em 1.5em;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 2em;
+            display: inline-block;
+        }
+
+        .question-number {
+            font-size: 1em;
+            color: #999;
+            margin-bottom: 1em;
+        }
+
+        .question-text {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 2em;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+            margin-bottom: 2em;
+        }
+
+        .option-btn {
+            background: #f8f9fa;
+            border: 3px solid transparent;
+            border-radius: 16px;
+            padding: 1.2em;
+            font-size: 1.2em;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .option-btn:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-btn.selected {
+            border-color: #667eea;
+            background: #f0f3ff;
+        }
+
+        .option-btn.correct {
+            border-color: #4caf50;
+            background: #e8f5e9;
+            animation: correctPulse 0.5s ease;
+        }
+
+        .option-btn.wrong {
+            border-color: #f44336;
+            background: #ffebee;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .feedback {
+            font-size: 3em;
+            margin: 0.5em 0;
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 1em 3em;
+            font-size: 1.2em;
+            font-family: inherit;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 1em;
+            font-size: 1.2em;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            margin-bottom: 1.5em;
+            font-family: inherit;
+            text-align: center;
+        }
+
+        .name-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .result-score {
+            font-size: 4em;
+            color: #667eea;
+            font-weight: bold;
+            margin: 0.5em 0;
+        }
+
+        .result-message {
+            font-size: 1.5em;
+            color: #666;
+            margin-bottom: 1em;
+        }
+
+        .result-icon {
+            font-size: 5em;
+            margin-bottom: 0.5em;
+        }
+
+        .trophy-animation {
+            animation: trophy 1s ease-in-out;
+        }
+
+        @keyframes trophy {
+            0% { transform: scale(0) rotate(-180deg); }
+            50% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 1em auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .game-title {
+                font-size: 1.5em;
+            }
+            
+            .game-subtitle {
+                font-size: 1em;
+            }
+            
+            .question-text {
+                font-size: 1.2em;
+            }
+            
+            .option-btn {
+                font-size: 1em;
+                padding: 1em;
+            }
+            
+            .result-score {
+                font-size: 3em;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="game-container">
+   <div class="hero-icons">
+    <svg width="60" height="60" style="top: 10%; right: 10%;"><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-size="40">
+      🚂
+     </text>
+    </svg>
+    <svg width="60" height="60" style="top: 20%; left: 15%; animation-delay: 1s;"><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-size="40">
+      🎯
+     </text>
+    </svg>
+    <svg width="60" height="60" style="top: 60%; right: 20%; animation-delay: 2s;"><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-size="40">
+      📚
+     </text>
+    </svg>
+    <svg width="60" height="60" style="top: 70%; left: 25%; animation-delay: 0.5s;"><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-size="40">
+      ⭐
+     </text>
+    </svg>
+   </div><!-- Welcome Screen -->
+   <div id="welcomeScreen" class="screen active">
+    <div class="welcome-card">
+     <div class="game-title" id="gameTitle">
+      بازی قهرمانان املایی
+     </div>
+     <div class="game-subtitle" id="gameSubtitle">
+      درس فداکاران - ۱۰ سوال املایی
+     </div><input type="text" id="studentName" class="name-input" placeholder="نام خود را وارد کنید"> <button class="btn-primary" id="startBtn">شروع بازی 🚀</button>
+    </div>
+   </div><!-- Question Screen -->
+   <div id="questionScreen" class="screen">
+    <div class="question-card">
+     <div class="score-badge">
+      امتیاز: <span id="currentScore">0</span> / 20
+     </div>
+     <div class="question-number" id="questionNumber">
+      سوال 1 از 10
+     </div>
+     <div class="question-text" id="questionText"></div>
+     <div class="options" id="optionsContainer"></div>
+     <div id="feedbackArea"></div><button class="btn-primary" id="nextBtn" style="display: none;">سوال بعدی ⬅️</button>
+    </div>
+   </div><!-- Result Screen -->
+   <div id="resultScreen" class="screen">
+    <div class="result-card">
+     <div class="result-icon trophy-animation" id="resultIcon">
+      🏆
+     </div>
+     <div class="result-score" id="finalScore">
+      0
+     </div>
+     <div class="result-message" id="resultMessage">
+      عالی بود!
+     </div>
+     <div id="loadingArea" style="display: none;">
+      <div class="loading-spinner"></div>
+      <p>در حال ذخیره نتیجه...</p>
+     </div><button class="btn-primary" id="restartBtn">شروع دوباره 🔄</button>
+    </div>
+   </div>
+  </div>
+  <script>
+        const defaultConfig = {
+            game_title: "بازی قهرمانان املایی",
+            game_subtitle: "درس فداکاران - ۱۰ سوال املایی",
+            start_button_text: "شروع بازی 🚀",
+            next_button_text: "سوال بعدی ⬅️",
+            finish_button_text: "مشاهده نتیجه 📊",
+            restart_button_text: "شروع دوباره 🔄",
+            background_color: "#667eea",
+            card_background: "#ffffff",
+            primary_color: "#667eea",
+            text_color: "#333333",
+            button_color: "#667eea",
+            font_family: "Vazirmatn",
+            font_size: 16
+        };
+
+        const questions = [
+            {
+                question: "نام نوجوان فداکاری که نارنجک به کمر بست و جلوی پیشروی دشمن را گرفت، چه بود؟",
+                options: ["محمدحسین فهمیده", "محمدحسن فهمیده", "محمدهسین فهمیده"],
+                correct: 0
+            },
+            {
+                question: "قهرمانی که در یک غروب سرد پاییزی جان مسافران قطار را نجات داد، چه نام داشت؟",
+                options: ["ریزهعلی خواجوی", "ریزعلی خواجوی", "ریسعلی خواجوی"],
+                correct: 1
+            },
+            {
+                question: "دانش‌آموز دوره دبستان که در شهر هویزه زندگی می‌کرد و با اشغال شهر آرام و قرار نداشت، چه نام داشت؟",
+                options: ["سیهام خیام", "سهام خیام", "سهام خایام"],
+                correct: 1
+            },
+            {
+                question: "عملی که انسان‌های بزرگ برای نجات هم‌نوعان خود انجام می‌دهند، چه نامیده می‌شود؟",
+                options: ["فداکاری", "فداغاری", "فداقاری"],
+                correct: 0
+            },
+            {
+                question: "ریزعلی خواجوی در غروب سرد پاییزی، هنگام بازگشت از [...] متوجه بسته شدن مسیر قطار شد؟",
+                options: ["مضرعه", "مزرعه", "مذرعه"],
+                correct: 1
+            },
+            {
+                question: "این انسان‌ها نامشان را برای همیشه در ذهن مردم، [...] می‌کنند.",
+                options: ["جاودانح", "جاودانه", "ژاودانه"],
+                correct: 1
+            },
+            {
+                question: "رگبار [...] اشغالگران سبب شد سهام خیام به آغوش خدا برسد.",
+                options: ["گلوله", "گلولح", "غلوله"],
+                correct: 0
+            },
+            {
+                question: "کاری که قهرمانان می‌کنند، آن‌ها را تبدیل به [...] و چراغ راه می‌کند؟",
+                options: ["سرمشغ", "سرمشق", "سر مشق"],
+                correct: 1
+            },
+            {
+                question: "وقتی فداکاران جان خود را به [...] می‌اندازند، این کار چه سببی برای ما می‌شود؟",
+                options: ["خطر", "ختر", "خضر"],
+                correct: 0
+            },
+            {
+                question: "کاری که قهرمانان انجام دادند، نام آن‌ها را تبدیل به یک انسان [...] می‌کند؟",
+                options: ["همکاری", "افتخارآفرین", "فداکاران"],
+                correct: 1
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedOption = null;
+        let studentName = "";
+
+        const dataHandler = {
+            onDataChanged(data) {
+                // UI updates handled when data changes
+            }
+        };
+
+        async function initializeApp() {
+            if (window.dataSdk) {
+                const initResult = await window.dataSdk.init(dataHandler);
+                if (!initResult.isOk) {
+                    console.error("Failed to initialize data SDK");
+                }
+            }
+
+            if (window.elementSdk) {
+                window.elementSdk.init({
+                    defaultConfig,
+                    onConfigChange: async (config) => {
+                        const gameTitle = document.getElementById('gameTitle');
+                        const gameSubtitle = document.getElementById('gameSubtitle');
+                        const startBtn = document.getElementById('startBtn');
+                        const nextBtn = document.getElementById('nextBtn');
+                        const restartBtn = document.getElementById('restartBtn');
+
+                        if (gameTitle) gameTitle.textContent = config.game_title || defaultConfig.game_title;
+                        if (gameSubtitle) gameSubtitle.textContent = config.game_subtitle || defaultConfig.game_subtitle;
+                        if (startBtn) startBtn.textContent = config.start_button_text || defaultConfig.start_button_text;
+                        if (nextBtn) nextBtn.textContent = config.next_button_text || defaultConfig.next_button_text;
+                        if (restartBtn) restartBtn.textContent = config.restart_button_text || defaultConfig.restart_button_text;
+
+                        const customFont = config.font_family || defaultConfig.font_family;
+                        const baseSize = config.font_size || defaultConfig.font_size;
+                        const baseFontStack = 'Tahoma, sans-serif';
+
+                        document.body.style.fontFamily = `${customFont}, ${baseFontStack}`;
+                        
+                        const gameTitle_el = document.querySelector('.game-title');
+                        if (gameTitle_el) gameTitle_el.style.fontSize = `${baseSize * 2}px`;
+                        
+                        const gameSubtitle_el = document.querySelector('.game-subtitle');
+                        if (gameSubtitle_el) gameSubtitle_el.style.fontSize = `${baseSize * 1.2}px`;
+                        
+                        const questionText_el = document.querySelector('.question-text');
+                        if (questionText_el) questionText_el.style.fontSize = `${baseSize * 1.5}px`;
+                        
+                        const optionBtns = document.querySelectorAll('.option-btn');
+                        optionBtns.forEach(btn => btn.style.fontSize = `${baseSize * 1.2}px`);
+                    },
+                    mapToCapabilities: (config) => ({
+                        recolorables: [
+                            {
+                                get: () => config.background_color || defaultConfig.background_color,
+                                set: (value) => {
+                                    if (window.elementSdk) {
+                                        window.elementSdk.config.background_color = value;
+                                        window.elementSdk.setConfig({ background_color: value });
+                                    }
+                                }
+                            },
+                            {
+                                get: () => config.card_background || defaultConfig.card_background,
+                                set: (value) => {
+                                    if (window.elementSdk) {
+                                        window.elementSdk.config.card_background = value;
+                                        window.elementSdk.setConfig({ card_background: value });
+                                    }
+                                }
+                            },
+                            {
+                                get: () => config.primary_color || defaultConfig.primary_color,
+                                set: (value) => {
+                                    if (window.elementSdk) {
+                                        window.elementSdk.config.primary_color = value;
+                                        window.elementSdk.setConfig({ primary_color: value });
+                                    }
+                                }
+                            },
+                            {
+                                get: () => config.text_color || defaultConfig.text_color,
+                                set: (value) => {
+                                    if (window.elementSdk) {
+                                        window.elementSdk.config.text_color = value;
+                                        window.elementSdk.setConfig({ text_color: value });
+                                    }
+                                }
+                            },
+                            {
+                                get: () => config.button_color || defaultConfig.button_color,
+                                set: (value) => {
+                                    if (window.elementSdk) {
+                                        window.elementSdk.config.button_color = value;
+                                        window.elementSdk.setConfig({ button_color: value });
+                                    }
+                                }
+                            }
+                        ],
+                        borderables: [],
+                        fontEditable: {
+                            get: () => config.font_family || defaultConfig.font_family,
+                            set: (value) => {
+                                if (window.elementSdk) {
+                                    window.elementSdk.config.font_family = value;
+                                    window.elementSdk.setConfig({ font_family: value });
+                                }
+                            }
+                        },
+                        fontSizeable: {
+                            get: () => config.font_size || defaultConfig.font_size,
+                            set: (value) => {
+                                if (window.elementSdk) {
+                                    window.elementSdk.config.font_size = value;
+                                    window.elementSdk.setConfig({ font_size: value });
+                                }
+                            }
+                        }
+                    }),
+                    mapToEditPanelValues: (config) => new Map([
+                        ["game_title", config.game_title || defaultConfig.game_title],
+                        ["game_subtitle", config.game_subtitle || defaultConfig.game_subtitle],
+                        ["start_button_text", config.start_button_text || defaultConfig.start_button_text],
+                        ["next_button_text", config.next_button_text || defaultConfig.next_button_text],
                         ["finish_button_text", config.finish_button_text || defaultConfig.finish_button_text],
                         ["restart_button_text", config.restart_button_text || defaultConfig.restart_button_text]
                     ])
